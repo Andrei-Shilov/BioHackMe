@@ -12,6 +12,8 @@ import { AppointmentsScreen } from './screens/AppointmentsScreen';
 import { ProtocolLibraryScreen } from './screens/ProtocolLibraryScreen';
 import { ProtocolDetailScreen } from './screens/ProtocolDetailScreen';
 import { ExpertDashboardScreen } from './screens/ExpertDashboardScreen';
+import { UserProfileScreen } from './screens/UserProfileScreen';
+import { ClinicMapScreen } from './screens/ClinicMapScreen';
 import { useAuthStore } from './store';
 
 // ─── Auth Guard ────────────────────────────────────────────────────
@@ -55,24 +57,8 @@ export default function App() {
             <Route path="/protocols/:id"    element={<ProtocolDetailScreen />}  />
 
             <Route path="/appointments" element={<AppointmentsScreen />} />
-            <Route
-              path="/map"
-              element={
-                <PlaceholderScreen
-                  title="Карта клиник"
-                  subtitle="Найти клинику рядом с вами"
-                />
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PlaceholderScreen
-                  title="Мой профиль"
-                  subtitle="Паспорт здоровья и конфиденциальность данных"
-                />
-              }
-            />
+            <Route path="/map"     element={<ClinicMapScreen />}    />
+            <Route path="/profile" element={<UserProfileScreen />} />
             <Route path="/expert/dashboard" element={<ExpertDashboardScreen />} />
             <Route
               path="/admin/review"
