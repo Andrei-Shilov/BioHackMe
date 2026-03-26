@@ -5,6 +5,10 @@ import { HomeScreen } from './screens/HomeScreen';
 import { LoginScreen } from './screens/auth/LoginScreen';
 import { RegisterScreen } from './screens/auth/RegisterScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
+import { AIAssistantScreen } from './screens/AIAssistantScreen';
+import { DoctorListScreen } from './screens/DoctorListScreen';
+import { DoctorProfileScreen } from './screens/DoctorProfileScreen';
+import { AppointmentsScreen } from './screens/AppointmentsScreen';
 import { useAuthStore } from './store';
 
 // ─── Auth Guard ────────────────────────────────────────────────────
@@ -39,25 +43,9 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route index element={<HomeScreen />} />
 
-            <Route
-              path="/ai-assistant"
-              element={
-                <PlaceholderScreen
-                  title="AI-ассистент"
-                  subtitle="Опишите симптомы, и AI поможет разобраться"
-                />
-              }
-            />
-            <Route
-              path="/doctors"
-              element={
-                <PlaceholderScreen
-                  title="Найти врача"
-                  subtitle="Специалисты с этическим профилем и прозрачными ценами"
-                />
-              }
-            />
-            <Route path="/doctors/:id" element={<PlaceholderScreen title="Профиль врача" />} />
+            <Route path="/ai-assistant" element={<AIAssistantScreen />} />
+            <Route path="/doctors"     element={<DoctorListScreen />}    />
+            <Route path="/doctors/:id" element={<DoctorProfileScreen />} />
 
             <Route
               path="/protocols"
@@ -74,15 +62,7 @@ export default function App() {
             />
             <Route path="/protocols/:id" element={<PlaceholderScreen title="Протокол" />} />
 
-            <Route
-              path="/appointments"
-              element={
-                <PlaceholderScreen
-                  title="Мои записи"
-                  subtitle="Предстоящие и прошедшие консультации"
-                />
-              }
-            />
+            <Route path="/appointments" element={<AppointmentsScreen />} />
             <Route
               path="/map"
               element={
