@@ -4,7 +4,6 @@ import { Footer } from './components/layout/Footer';
 import { HomeScreen } from './screens/HomeScreen';
 import { LoginScreen } from './screens/auth/LoginScreen';
 import { RegisterScreen } from './screens/auth/RegisterScreen';
-import { PlaceholderScreen } from './screens/PlaceholderScreen';
 import { AIAssistantScreen } from './screens/AIAssistantScreen';
 import { DoctorListScreen } from './screens/DoctorListScreen';
 import { DoctorProfileScreen } from './screens/DoctorProfileScreen';
@@ -14,6 +13,8 @@ import { ProtocolDetailScreen } from './screens/ProtocolDetailScreen';
 import { ExpertDashboardScreen } from './screens/ExpertDashboardScreen';
 import { UserProfileScreen } from './screens/UserProfileScreen';
 import { ClinicMapScreen } from './screens/ClinicMapScreen';
+import { ProtocolEditorScreen } from './screens/ProtocolEditorScreen';
+import { AdminReviewScreen } from './screens/AdminReviewScreen';
 import { useAuthStore } from './store';
 
 // ─── Auth Guard ────────────────────────────────────────────────────
@@ -53,22 +54,14 @@ export default function App() {
             <Route path="/doctors/:id" element={<DoctorProfileScreen />} />
 
             <Route path="/protocols"        element={<ProtocolLibraryScreen />} />
-            <Route path="/protocols/create" element={<PlaceholderScreen title="Редактор протокола" subtitle="Создайте структурированный медицинский алгоритм" />} />
+            <Route path="/protocols/create" element={<ProtocolEditorScreen />} />
             <Route path="/protocols/:id"    element={<ProtocolDetailScreen />}  />
 
             <Route path="/appointments" element={<AppointmentsScreen />} />
             <Route path="/map"     element={<ClinicMapScreen />}    />
             <Route path="/profile" element={<UserProfileScreen />} />
             <Route path="/expert/dashboard" element={<ExpertDashboardScreen />} />
-            <Route
-              path="/admin/review"
-              element={
-                <PlaceholderScreen
-                  title="Этический комитет"
-                  subtitle="Рецензирование протоколов"
-                />
-              }
-            />
+            <Route path="/admin/review" element={<AdminReviewScreen />} />
           </Route>
         </Route>
 
