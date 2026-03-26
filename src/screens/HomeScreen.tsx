@@ -261,6 +261,7 @@ const HEALTH_METRICS = [
 ];
 
 function HealthSummaryCard() {
+  const navigate  = useNavigate();
   const [hasData] = useState(true); // Would come from HealthKit/Google Fit
 
   if (!hasData) {
@@ -304,9 +305,17 @@ function HealthSummaryCard() {
           </div>
         ))}
       </div>
-      <div className="mt-4 flex items-center gap-2 text-sm text-text-muted font-body">
-        <TrendingUp size={14} className="text-green-health" />
-        Все показатели в норме. Отличная работа!
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-text-muted font-body">
+          <TrendingUp size={14} className="text-green-health" />
+          Все показатели в норме. Отличная работа!
+        </div>
+        <button
+          onClick={() => navigate('/health')}
+          className="text-xs text-soft-blue font-semibold font-body hover:underline flex items-center gap-1"
+        >
+          Подробнее <ChevronRight size={13} />
+        </button>
       </div>
     </Card>
   );

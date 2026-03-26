@@ -2,13 +2,14 @@ import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
-import { useAuthStore } from './store';
+import { useAuthStore, useUIStore } from './store';
 import { restoreSession } from './services/auth';
 
 // ─── Eager (always needed) ──────────────────────────────────────────
-import { HomeScreen }    from './screens/HomeScreen';
-import { LoginScreen }   from './screens/auth/LoginScreen';
-import { RegisterScreen} from './screens/auth/RegisterScreen';
+import { HomeScreen }          from './screens/HomeScreen';
+import { LoginScreen }         from './screens/auth/LoginScreen';
+import { RegisterScreen }      from './screens/auth/RegisterScreen';
+import { ForgotPasswordScreen} from './screens/auth/ForgotPasswordScreen';
 
 // ─── Lazy (code-split) ─────────────────────────────────────────────
 const AIAssistantScreen      = lazy(() => import('./screens/AIAssistantScreen').then((m) => ({ default: m.AIAssistantScreen })));
@@ -22,6 +23,7 @@ const ExpertDashboardScreen  = lazy(() => import('./screens/ExpertDashboardScree
 const UserProfileScreen      = lazy(() => import('./screens/UserProfileScreen').then((m) => ({ default: m.UserProfileScreen })));
 const ClinicMapScreen        = lazy(() => import('./screens/ClinicMapScreen').then((m) => ({ default: m.ClinicMapScreen })));
 const AdminReviewScreen      = lazy(() => import('./screens/AdminReviewScreen').then((m) => ({ default: m.AdminReviewScreen })));
+const HealthMetricsScreen    = lazy(() => import('./screens/HealthMetricsScreen').then((m) => ({ default: m.HealthMetricsScreen })));
 
 // ─── Loading fallback ───────────────────────────────────────────────
 function PageLoader() {
@@ -62,8 +64,10 @@ function AppShell() {
 
 // ─── Root App ──────────────────────────────────────────────────────
 export default function App() {
-  const { setUser, setProfile } = useAuthStore();
+  const { setUser, setProfile, isAuthenticated } = useAuthStore();
+  const { addNotification } = useUIStore();
 
+  // Restore Supabase session
   useEffect(() => {
     if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
       restoreSession().then((data) => {
@@ -72,11 +76,25 @@ export default function App() {
     }
   }, [setUser, setProfile]);
 
+  // Seed demo notifications once after login
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const key = 'lumina_notif_seeded';
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+
+    const now = new Date().toISOString();
+    addNotification({ id: 'n1', type: 'appointment', title: 'Запись подтверждена', message: 'Анна Сергеева · Сегодня в 14:00', isRead: false, createdAt: now });
+    addNotification({ id: 'n2', type: 'protocol',    title: 'Новый протокол',      message: 'КПТ при тревожных расстройствах обновлён', isRead: false, createdAt: now });
+    addNotification({ id: 'n3', type: 'system',      title: 'Добро пожаловать!',   message: 'Lumina Health — Premium care for every body', isRead: true,  createdAt: now });
+  }, [isAuthenticated, addNotification]);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/auth/login"    element={<LoginScreen />}    />
-        <Route path="/auth/register" element={<RegisterScreen />} />
+        <Route path="/auth/login"          element={<LoginScreen />}          />
+        <Route path="/auth/register"       element={<RegisterScreen />}       />
+        <Route path="/auth/forgot"         element={<ForgotPasswordScreen />} />
 
         <Route element={<RequireAuth />}>
           <Route element={<AppShell />}>
@@ -91,6 +109,7 @@ export default function App() {
             <Route path="/protocols/:id"    element={<ProtocolDetailScreen />}  />
 
             <Route path="/appointments"      element={<AppointmentsScreen />}    />
+            <Route path="/health"            element={<HealthMetricsScreen />}   />
             <Route path="/map"               element={<ClinicMapScreen />}       />
             <Route path="/profile"           element={<UserProfileScreen />}     />
             <Route path="/expert/dashboard"  element={<ExpertDashboardScreen />} />

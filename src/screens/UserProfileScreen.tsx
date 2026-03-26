@@ -153,6 +153,35 @@ function ProfileSection() {
   );
 }
 
+// ─── Data export helper ─────────────────────────────────────────────
+function exportUserData(userId: string) {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    userId,
+    profile: { name: 'Пользователь', email: 'user@example.com' },
+    healthMetrics: [
+      { type: 'blood_pressure', value: '120/80', unit: 'mmHg', recordedAt: new Date(Date.now() - 86400000).toISOString() },
+      { type: 'weight',        value: '72',      unit: 'kg',   recordedAt: new Date(Date.now() - 86400000).toISOString() },
+    ],
+    moodLogs: [
+      { score: 4, recordedAt: new Date(Date.now() - 3600000).toISOString() },
+    ],
+    appointments: [],
+    consents: { analytics: true, personalisation: true, marketing: false, thirdParty: false },
+    dataAccessLog: [
+      { actor: 'AI-ассистент', action: 'read health history', timestamp: new Date().toISOString() },
+    ],
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `lumina-health-export-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ─── Privacy section (GDPR/HIPAA) ──────────────────────────────────
 function PrivacySection() {
   const [consents, setConsents] = useState<Consent[]>([
@@ -211,7 +240,7 @@ function PrivacySection() {
             icon={<Download size={16} />}
             label="Экспорт данных"
             desc="Скачать все ваши данные в формате JSON"
-            onClick={() => {/* stub */}}
+            onClick={() => exportUserData('demo-user-1')}
           />
           <ActionRow
             icon={<Eye size={16} />}

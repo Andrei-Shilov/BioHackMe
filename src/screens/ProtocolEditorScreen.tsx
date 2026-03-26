@@ -46,7 +46,6 @@ const SPECIALTIES: { value: Specialty; label: string }[] = [
   { value: 'oncology',     label: 'Онкология'       },
   { value: 'pediatrics',   label: 'Педиатрия'       },
   { value: 'dermatology',  label: 'Дерматология'    },
-  { value: 'oncology',     label: 'Онкология'       },
   { value: 'gynecology',   label: 'Гинекология'     },
   { value: 'rehabilitation',label: 'Реабилитация'   },
   { value: 'general',      label: 'Общая практика'  },

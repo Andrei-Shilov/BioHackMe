@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Calendar, Clock, Video, ChevronRight,
   X, RotateCcw, MessageSquare, FileText,
+  Mic, MicOff, VideoOff, PhoneOff, Settings,
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -98,6 +99,7 @@ export function AppointmentsScreen() {
   const [appointments, setAppointments] = useState(DEMO_APPOINTMENTS);
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [detailTarget, setDetailTarget] = useState<Appointment | null>(null);
+  const [callTarget,   setCallTarget]   = useState<Appointment | null>(null);
 
   const upcoming = appointments.filter((a) => a.status === 'upcoming');
   const past      = appointments.filter((a) => a.status !== 'upcoming');
@@ -151,7 +153,7 @@ export function AppointmentsScreen() {
                 appointment={appt}
                 onDetail={() => setDetailTarget(appt)}
                 onCancel={() => setCancelTarget(appt.id)}
-                onJoin={() => {/* video call stub */}}
+                onJoin={() => setCallTarget(appt)}
               />
             ))
           )}
@@ -197,6 +199,14 @@ export function AppointmentsScreen() {
       >
         {detailTarget && <AppointmentDetail appointment={detailTarget} />}
       </Modal>
+
+      {/* Video call modal */}
+      {callTarget && (
+        <VideoCallModal
+          appointment={callTarget}
+          onClose={() => setCallTarget(null)}
+        />
+      )}
     </PageLayout>
   );
 }
@@ -388,5 +398,132 @@ function EmptyAppointments({ onBook }: { onBook: () => void }) {
         Найти врача
       </Button>
     </div>
+  );
+}
+
+// ─── Video call modal ────────────────────────────────────────────────
+function VideoCallModal({
+  appointment: a, onClose,
+}: {
+  appointment: Appointment; onClose: () => void;
+}) {
+  const [micOn,   setMicOn]   = useState(true);
+  const [camOn,   setCamOn]   = useState(true);
+  const [elapsed, setElapsed] = useState(0);
+
+  // Timer
+  useState(() => {
+    const id = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  });
+
+  const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const ss = String(elapsed % 60).padStart(2, '0');
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-gray-950 animate-fade-up">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-safe pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          <Avatar name={a.doctorName} size="sm" />
+          <div>
+            <p className="font-semibold text-white font-body text-sm">{a.doctorName}</p>
+            <p className="text-xs text-gray-400 font-body">{a.doctorSpecialty}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-mono text-emerald-400">{mm}:{ss}</span>
+          <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-body">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-soft" />
+            В эфире
+          </span>
+        </div>
+      </div>
+
+      {/* Video area */}
+      <div className="flex-1 relative mx-4 mb-4 rounded-3xl overflow-hidden bg-gray-900 flex items-center justify-center">
+        {/* Remote video placeholder */}
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Avatar name={a.doctorName} size="xl" />
+          <div>
+            <p className="font-display text-xl text-white">{a.doctorName}</p>
+            <p className="text-gray-400 font-body text-sm">{camOn ? 'Камера включена' : 'Камера выключена'}</p>
+          </div>
+        </div>
+
+        {/* Self-view pip */}
+        <div className="absolute bottom-4 right-4 w-24 h-32 bg-gray-800 rounded-2xl border-2 border-gray-700 flex items-center justify-center shadow-lg">
+          {camOn ? (
+            <div className="text-center">
+              <div className="w-8 h-8 rounded-full bg-soft-blue mx-auto mb-1 flex items-center justify-center">
+                <Video size={14} className="text-white" />
+              </div>
+              <p className="text-xs text-gray-400 font-body">Вы</p>
+            </div>
+          ) : (
+            <VideoOff size={20} className="text-gray-500" />
+          )}
+        </div>
+
+        {/* Disclaimer */}
+        <div className="absolute top-3 left-3 right-3">
+          <div className="bg-amber-900/80 backdrop-blur-sm rounded-xl px-3 py-2 text-xs text-amber-200 font-body text-center">
+            Демо-режим. В продакшене — WebRTC через Supabase Realtime
+          </div>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-4 pb-safe pb-8">
+        <ControlBtn
+          active={micOn}
+          activeIcon={<Mic size={20} />}
+          inactiveIcon={<MicOff size={20} />}
+          label={micOn ? 'Выкл. микр.' : 'Вкл. микр.'}
+          onToggle={() => setMicOn(!micOn)}
+        />
+        <ControlBtn
+          active={camOn}
+          activeIcon={<Video size={20} />}
+          inactiveIcon={<VideoOff size={20} />}
+          label={camOn ? 'Выкл. камеру' : 'Вкл. камеру'}
+          onToggle={() => setCamOn(!camOn)}
+        />
+        <button className="flex flex-col items-center gap-1">
+          <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center hover:bg-gray-600 transition-colors">
+            <Settings size={20} className="text-gray-300" />
+          </div>
+          <span className="text-xs text-gray-400 font-body">Настройки</span>
+        </button>
+        {/* End call */}
+        <button onClick={onClose} className="flex flex-col items-center gap-1">
+          <div className="w-14 h-14 rounded-full bg-warm-coral flex items-center justify-center hover:bg-red-600 transition-colors shadow-glow-coral">
+            <PhoneOff size={22} className="text-white" />
+          </div>
+          <span className="text-xs text-gray-400 font-body">Завершить</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ControlBtn({
+  active, activeIcon, inactiveIcon, label, onToggle,
+}: {
+  active: boolean; activeIcon: React.ReactNode; inactiveIcon: React.ReactNode;
+  label: string; onToggle: () => void;
+}) {
+  return (
+    <button onClick={onToggle} className="flex flex-col items-center gap-1">
+      <div className={cn(
+        'w-12 h-12 rounded-full flex items-center justify-center transition-colors',
+        active ? 'bg-gray-700 hover:bg-gray-600' : 'bg-warm-coral/20 hover:bg-warm-coral/30'
+      )}>
+        <span className={active ? 'text-white' : 'text-warm-coral'}>
+          {active ? activeIcon : inactiveIcon}
+        </span>
+      </div>
+      <span className="text-xs text-gray-400 font-body">{label}</span>
+    </button>
   );
 }
