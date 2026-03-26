@@ -9,6 +9,9 @@ import { AIAssistantScreen } from './screens/AIAssistantScreen';
 import { DoctorListScreen } from './screens/DoctorListScreen';
 import { DoctorProfileScreen } from './screens/DoctorProfileScreen';
 import { AppointmentsScreen } from './screens/AppointmentsScreen';
+import { ProtocolLibraryScreen } from './screens/ProtocolLibraryScreen';
+import { ProtocolDetailScreen } from './screens/ProtocolDetailScreen';
+import { ExpertDashboardScreen } from './screens/ExpertDashboardScreen';
 import { useAuthStore } from './store';
 
 // ─── Auth Guard ────────────────────────────────────────────────────
@@ -47,20 +50,9 @@ export default function App() {
             <Route path="/doctors"     element={<DoctorListScreen />}    />
             <Route path="/doctors/:id" element={<DoctorProfileScreen />} />
 
-            <Route
-              path="/protocols"
-              element={
-                <PlaceholderScreen
-                  title="Библиотека протоколов"
-                  subtitle="Доказательные медицинские алгоритмы от верифицированных экспертов"
-                />
-              }
-            />
-            <Route
-              path="/protocols/create"
-              element={<PlaceholderScreen title="Создать протокол" subtitle="Редактор для экспертов" />}
-            />
-            <Route path="/protocols/:id" element={<PlaceholderScreen title="Протокол" />} />
+            <Route path="/protocols"        element={<ProtocolLibraryScreen />} />
+            <Route path="/protocols/create" element={<PlaceholderScreen title="Редактор протокола" subtitle="Создайте структурированный медицинский алгоритм" />} />
+            <Route path="/protocols/:id"    element={<ProtocolDetailScreen />}  />
 
             <Route path="/appointments" element={<AppointmentsScreen />} />
             <Route
@@ -81,15 +73,7 @@ export default function App() {
                 />
               }
             />
-            <Route
-              path="/expert/dashboard"
-              element={
-                <PlaceholderScreen
-                  title="Кабинет эксперта"
-                  subtitle="Аналитика, доходы и управление протоколами"
-                />
-              }
-            />
+            <Route path="/expert/dashboard" element={<ExpertDashboardScreen />} />
             <Route
               path="/admin/review"
               element={
