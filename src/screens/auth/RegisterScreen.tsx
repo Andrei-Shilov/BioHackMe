@@ -4,7 +4,12 @@ import { Heart, Mail, Lock, User, Stethoscope } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useAuthStore } from '../../store';
+import { signUp, isAuthError } from '../../services/auth';
 import type { User as UserType, UserProfile, UserRole } from '../../types';
+
+const SUPABASE_CONFIGURED = !!(
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export function RegisterScreen() {
   const navigate = useNavigate();
@@ -16,29 +21,38 @@ export function RegisterScreen() {
   const [role,     setRole]     = useState<UserRole>('patient');
   const [loading,  setLoading]  = useState(false);
   const [agreed,   setAgreed]   = useState(false);
+  const [error,    setError]    = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreed) return;
+    setError('');
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
 
-    const newUser: UserType = {
-      id:               `user-${Date.now()}`,
-      email,
-      role,
-      subscriptionTier: 'essential',
-      createdAt:        new Date().toISOString(),
-    };
-    const newProfile: UserProfile = {
-      userId:     newUser.id,
-      name,
-      conditions: [],
-      allergies:  [],
-    };
+    if (SUPABASE_CONFIGURED) {
+      const result = await signUp(email, password, name, role === 'expert' ? 'expert' : 'patient');
+      if (isAuthError(result)) {
+        setError(result.message);
+        setLoading(false);
+        return;
+      }
+      setUser(result.user);
+      setProfile(result.profile);
+    } else {
+      await new Promise((r) => setTimeout(r, 800));
+      const newUser: UserType = {
+        id: `user-${Date.now()}`, email, role,
+        subscriptionTier: 'essential',
+        createdAt: new Date().toISOString(),
+      };
+      const newProfile: UserProfile = {
+        userId: newUser.id, name,
+        conditions: [], allergies: [],
+      };
+      setUser(newUser);
+      setProfile(newProfile);
+    }
 
-    setUser(newUser);
-    setProfile(newProfile);
     setLoading(false);
     navigate('/');
   };
@@ -56,6 +70,12 @@ export function RegisterScreen() {
 
         <div className="bg-white rounded-3xl shadow-card p-8 animate-fade-up" style={{ animationDelay: '0.1s' }}>
           <h2 className="font-display text-2xl text-calm-blue mb-6">Создать аккаунт</h2>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-warm-coral font-body">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input

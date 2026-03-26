@@ -4,7 +4,12 @@ import { Heart, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useAuthStore } from '../../store';
+import { signIn, signInWithProvider, isAuthError } from '../../services/auth';
 import type { User, UserProfile } from '../../types';
+
+const SUPABASE_CONFIGURED = !!(
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export function LoginScreen() {
   const navigate = useNavigate();
@@ -20,27 +25,40 @@ export function LoginScreen() {
     setError('');
     setLoading(true);
 
-    // Demo login: accept any credentials
-    await new Promise((r) => setTimeout(r, 800));
+    if (SUPABASE_CONFIGURED) {
+      const result = await signIn(email, password);
+      if (isAuthError(result)) {
+        setError(result.message);
+        setLoading(false);
+        return;
+      }
+      setUser(result.user);
+      setProfile(result.profile);
+    } else {
+      // Demo fallback (no Supabase env vars)
+      await new Promise((r) => setTimeout(r, 800));
+      const demoUser: User = {
+        id: 'demo-user-1', email,
+        role: 'patient', subscriptionTier: 'plus',
+        createdAt: new Date().toISOString(),
+      };
+      const demoProfile: UserProfile = {
+        userId: 'demo-user-1',
+        name: email.split('@')[0] || 'Пользователь',
+        conditions: [], allergies: [],
+      };
+      setUser(demoUser);
+      setProfile(demoProfile);
+    }
 
-    const demoUser: User = {
-      id:               'demo-user-1',
-      email,
-      role:             'patient',
-      subscriptionTier: 'plus',
-      createdAt:        new Date().toISOString(),
-    };
-    const demoProfile: UserProfile = {
-      userId:     'demo-user-1',
-      name:       email.split('@')[0] || 'Пользователь',
-      conditions: [],
-      allergies:  [],
-    };
-
-    setUser(demoUser);
-    setProfile(demoProfile);
     setLoading(false);
     navigate('/');
+  };
+
+  const handleOAuth = async (provider: 'google' | 'apple') => {
+    if (!SUPABASE_CONFIGURED) return;
+    const err = await signInWithProvider(provider);
+    if (err) setError(err.message);
   };
 
   return (
@@ -125,13 +143,25 @@ export function LoginScreen() {
 
           {/* SSO Buttons */}
           <div className="flex gap-3">
-            <button className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-calm-blue-100 rounded-xl text-sm font-medium text-text-primary hover:bg-calm-blue-50 transition-colors font-body">
+            <button
+              onClick={() => handleOAuth('google')}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-calm-blue-100 rounded-xl text-sm font-medium text-text-primary hover:bg-calm-blue-50 transition-colors font-body"
+            >
               <GoogleIcon /> Google
             </button>
-            <button className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-calm-blue-100 rounded-xl text-sm font-medium text-text-primary hover:bg-calm-blue-50 transition-colors font-body">
+            <button
+              onClick={() => handleOAuth('apple')}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-calm-blue-100 rounded-xl text-sm font-medium text-text-primary hover:bg-calm-blue-50 transition-colors font-body"
+            >
               <AppleIcon /> Apple
             </button>
           </div>
+
+          {!SUPABASE_CONFIGURED && (
+            <p className="mt-4 text-xs text-center text-text-muted font-body">
+              Демо-режим: любые данные для входа
+            </p>
+          )}
         </div>
       </div>
     </div>
